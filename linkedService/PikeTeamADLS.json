@@ -1,0 +1,14 @@
+{
+	"name": "PikeTeamADLS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDataLakeStore",
+		"typeProperties": {
+			"dataLakeStoreUri": "https://piketeamadls.azuredatalakestore.net/webhdfs/v1",
+			"tenant": "9fbce44f-d64c-4f7e-bbe0-19479c36278b",
+			"subscriptionId": "3769e455-2e41-407b-b8dd-cd711324b864",
+			"resourceGroupName": "PikeTEAM"
+		}
+	}
+}

@@ -1,0 +1,1315 @@
+{
+	"name": "MasterPipelineAll",
+	"properties": {
+		"activities": [
+			{
+				"name": "ExecExtractTimesheetPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractTimesheetPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Email Success",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractThirdEyePipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecWorkLocationPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecWorkUserListPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimWeatherPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecFactOshaEventPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecFactDailyTaskPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecFactDelayEventPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecFactMileageFromZonarPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Pipeline @{pipeline().Pipeline}  Success at @{utcnow()}\", \"Subject\": \"Pipeline Success - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ExecExtractThirdEyePipeline",
+				"description": "This runs from midnight to midnight on the day prior to ETLWindowsStart.\nETLWindowStartDay -1 day (the Day Prior) 00:00:00 to ETLWindowStartDay 00:00:00 ",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractThirdEyePipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@{formatDateTime(adddays(pipeline().parameters.ETLWindowStart,-1),'yyyy-MM-dd')}",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@{formatDateTime(pipeline().parameters.ETLWindowStart,'yyyy-MM-dd')}",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractDailyTaskPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractDailyTaskPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractDelayPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractDelayPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractJobPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractJobPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractOSHAPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractOSHAPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractWeatherPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecWeatherAPICSVToADLAllYards",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractWeatherPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractYardPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractYardPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecWorkUserListPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WorkUserListPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecWorkLocationPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WorkLocationPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimAssetPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractTimesheetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimAssetPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimCustomerPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractJobPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimCustomerPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimDatePipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimDatePipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimDelayPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractDelayPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimDelayPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimEmployeePipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractTimesheetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimEmployeePipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimJobPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractJobPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimJobPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimWorkOrderPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractTimesheetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecExtractDelayPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimWorkOrderPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimYardPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractYardPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimYardPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimTaskPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractDailyTaskPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimTaskPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecDimWeatherPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractWeatherPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "DimWeatherPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactOshaEventPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractOSHAPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimCustomerPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactOshaEventPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactActivitySummaryPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecDimAssetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimYardPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimWeatherPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactActivitySummaryPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactDelayEventPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecFactTimesheetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimDelayPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactDelayEventPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactTimesheetPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecFactActivitySummaryPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimJobPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimEmployeePipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimCustomerPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimDatePipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimWorkOrderPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactTimesheetPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactDailyTaskPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecFactTimesheetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimTaskPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactDailyTaskPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecWeatherAPICSVToADLAllYards",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecDimYardPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExecWeatherAPICSVToADLAllYards",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExecZonarMileageAPIXMLToADLPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExecZonarMileageAPIXMLToADLPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractZonarMileagePipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExecZonarMileageAPIXMLToADLPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractZonarMileagePipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactMileageFromZonarPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractZonarMileagePipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimAssetPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "ExecDimDatePipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactMileageFromZonarPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"NotificationList": {
+				"type": "String"
+			},
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Master Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

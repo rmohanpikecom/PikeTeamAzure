@@ -1,0 +1,121 @@
+{
+	"name": "ExecWeatherAPICSVToADLAllYards",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetYardListPipeline",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "Select YardSK, CAST(YardCenterLatitude AS VARCHAR(20)) +','+\n\t\t\t\t\t\t   CAST(YardCenterLongitude AS VARCHAR(20)) GeoCode\n\t\tFrom DW.Yard WHERE YardSk != -1;\n",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "AzureSqlDWETLPipelineInstance",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachYard",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetYardListPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetYardListPipeline').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "ExecWeatherAPICSVToADLPipeline",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "ExecWeatherAPICSVToADL",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ETLWindowStart": {
+										"value": "@pipeline().parameters.ETLWindowStart",
+										"type": "Expression"
+									},
+									"ETLWindowEnd": {
+										"value": "@pipeline().parameters.ETLWindowEnd",
+										"type": "Expression"
+									},
+									"ETLMasterPipelineID": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"ETLMasterPipelineName": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"NotificationList": {
+										"value": "@pipeline().parameters.NotificationList",
+										"type": "Expression"
+									},
+									"GeoCode": {
+										"value": "@item().GeoCode",
+										"type": "Expression"
+									},
+									"YardSK": {
+										"value": "@item().YardSK",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLMasterPipelineID": {
+				"type": "String"
+			},
+			"ETLMasterPipelineName": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "API To ADL Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

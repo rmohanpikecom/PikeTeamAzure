@@ -1,0 +1,119 @@
+{
+	"name": "ZonarMileageJsonBLob",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ZonarJsonFiles",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Container": {
+				"type": "String"
+			},
+			"FileLocation": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlob",
+		"structure": [
+			{
+				"name": "CreateDate",
+				"type": "String"
+			},
+			{
+				"name": "xmlversion",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelistver",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelistcount",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelisttotal",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileageliststart",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelistend",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelistunit",
+				"type": "String"
+			},
+			{
+				"name": "tag",
+				"type": "String"
+			},
+			{
+				"name": "fleet",
+				"type": "String"
+			},
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "id",
+				"type": "String"
+			},
+			{
+				"name": "from",
+				"type": "String"
+			},
+			{
+				"name": "to",
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "distance",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"format": {
+				"type": "JsonFormat",
+				"filePattern": "setOfObjects",
+				"jsonNodeReference": "$.['gpsmileagelist']['assetdist']",
+				"jsonPathDefinition": {
+					"CreateDate": "$.['CreateDate']",
+					"xmlversion": "$.['?xml']['@version']",
+					"gpsmileagelistver": "$.['gpsmileagelist']['@ver']",
+					"gpsmileagelistcount": "$.['gpsmileagelist']['@count']",
+					"gpsmileagelisttotal": "$.['gpsmileagelist']['@total']",
+					"gpsmileageliststart": "$.['gpsmileagelist']['@start']",
+					"gpsmileagelistend": "$.['gpsmileagelist']['@end']",
+					"gpsmileagelistunit": "$.['gpsmileagelist']['@unit']",
+					"tag": "['@tag']",
+					"fleet": "['@fleet']",
+					"type": "['@type']",
+					"id": "['@id']",
+					"from": "['loi']['from']",
+					"to": "['loi']['to']",
+					"name": "['loi']['name']",
+					"distance": "['loi']['distance']"
+				}
+			},
+			"fileName": {
+				"value": "@dataset().FileLocation",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().Container",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

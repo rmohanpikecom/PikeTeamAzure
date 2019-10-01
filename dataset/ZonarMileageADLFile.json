@@ -1,0 +1,104 @@
+{
+	"name": "ZonarMileageADLFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PikeTeamADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Container": {
+				"type": "String"
+			},
+			"FileLocation": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDataLakeStoreFile",
+		"structure": [
+			{
+				"name": "CreateDate",
+				"type": "String"
+			},
+			{
+				"name": "?xml.@version",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@ver",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@count",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@total",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@start",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@end",
+				"type": "String"
+			},
+			{
+				"name": "gpsmileagelist.@unit",
+				"type": "String"
+			},
+			{
+				"name": "tag",
+				"type": "String"
+			},
+			{
+				"name": "fleet",
+				"type": "String"
+			},
+			{
+				"name": "type",
+				"type": "String"
+			},
+			{
+				"name": "id",
+				"type": "String"
+			},
+			{
+				"name": "from",
+				"type": "String"
+			},
+			{
+				"name": "to",
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "distance",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": "|",
+				"nullValue": "\\N",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": false
+			},
+			"fileName": {
+				"value": "@dataset().FileLocation",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().Container",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,31 @@
+{
+	"name": "Daily1300UTC",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "MasterPipelineAll",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"NotificationList": "YourEmail@Pike.com",
+				"ETLWindowStart": "@{formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss')}",
+				"ETLWindowEnd": "@{formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss')}"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 24,
+			"startTime": "2018-06-08T13:00:00Z",
+			"delay": "00:03:00",
+			"maxConcurrency": 1,
+			"retryPolicy": {
+				"count": 3,
+				"intervalInSeconds": 240
+			},
+			"dependsOn": []
+		}
+	}
+}

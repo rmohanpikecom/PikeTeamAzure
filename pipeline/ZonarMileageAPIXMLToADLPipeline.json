@@ -1,0 +1,426 @@
+{
+	"name": "ZonarMileageAPIXMLToADLPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "WebService",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ActivityBegin",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@pipeline().parameters.WebServiceUrl",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\"Container\":\"@{pipeline().parameters.Container}\",\"StorageConnectionString\": \"@{pipeline().parameters.StorageConnectionString}\",\"ServiceUserName\" : \"@{pipeline().parameters.ServiceUserName}\",\"ServicePassword\" : \"@{pipeline().parameters.ServicePassword}\",\"ServiceUrl\": \"@{pipeline().parameters.ServiceUrl}\",\"FileLocation\":\"@{pipeline().parameters.FileLocation}\",\"Format\":\"@{pipeline().parameters.Format}\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "CopyToDataLake",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "WebService",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "@{pipeline().parameters.Container}/@{pipeline().parameters.FileLocation}"
+					},
+					{
+						"name": "Destination",
+						"value": "@{pipeline().parameters.Container}/@{pipeline().parameters.FileLocation}"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "BlobSource",
+						"recursive": true
+					},
+					"sink": {
+						"type": "AzureDataLakeStoreSink",
+						"copyBehavior": {
+							"value": "@utcnow()",
+							"type": "Expression"
+						}
+					},
+					"enableStaging": false,
+					"dataIntegrationUnits": 0,
+					"translator": {
+						"type": "TabularTranslator",
+						"columnMappings": {
+							"CreateDate": "CreateDate",
+							"xmlversion": "?xml.@version",
+							"gpsmileagelistver": "gpsmileagelist.@ver",
+							"gpsmileagelistcount": "gpsmileagelist.@count",
+							"gpsmileagelisttotal": "gpsmileagelist.@total",
+							"gpsmileageliststart": "gpsmileagelist.@start",
+							"gpsmileagelistend": "gpsmileagelist.@end",
+							"gpsmileagelistunit": "gpsmileagelist.@unit",
+							"tag": "tag",
+							"fleet": "fleet",
+							"type": "type",
+							"id": "id",
+							"from": "from",
+							"to": "to",
+							"name": "name",
+							"distance": "distance"
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ZonarMileageJsonBLob",
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": {
+								"value": "@pipeline().parameters.Container",
+								"type": "Expression"
+							},
+							"FileLocation": {
+								"value": "@pipeline().parameters.FileLocation",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ZonarMileageADLFile",
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": {
+								"value": "@pipeline().parameters.Container",
+								"type": "Expression"
+							},
+							"FileLocation": {
+								"value": "@pipeline().parameters.FileLocation",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "ActivityBegin",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pActivityInsert]",
+					"storedProcedureParameters": {
+						"ETLActivityName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLActivityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineId": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLSliceEnd": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLTask": {
+							"value": {
+								"value": "@pipeline().parameters.ETLTask",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowEnd": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowEnd",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"SourceTable": {
+							"value": {
+								"value": "@pipeline().parameters.SourceTable",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLSliceStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ActivityBegin Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ActivityBegin",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ActivityBegin').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "WebService Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "WebService",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ActivityBegin').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ActivityEnd",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CopyToDataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pActivityUpdate]",
+					"storedProcedureParameters": {
+						"ETLActivityName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLActivityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineID": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLStatus": {
+							"value": "Success",
+							"type": "String"
+						},
+						"RowsErrored": {
+							"value": "0",
+							"type": "Int64"
+						},
+						"RowsInserted": {
+							"value": {
+								"value": "@activity('CopyToDataLake').output.rowsCopied",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						},
+						"RowsUpdated": {
+							"value": "0",
+							"type": "Int64"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ActivityEnd Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ActivityEnd",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ActivityBegin').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"Container": {
+				"type": "String"
+			},
+			"StorageConnectionString": {
+				"type": "String"
+			},
+			"ServiceUserName": {
+				"type": "String"
+			},
+			"ServicePassword": {
+				"type": "String"
+			},
+			"ServiceUrl": {
+				"type": "String"
+			},
+			"FileLocation": {
+				"type": "String"
+			},
+			"WebServiceUrl": {
+				"type": "String"
+			},
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"SourceTable": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLTask": {
+				"type": "String"
+			},
+			"ETLActivityName": {
+				"type": "String"
+			},
+			"ETLPipelineID": {
+				"type": "String"
+			},
+			"ETLPipelineName": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			},
+			"Format": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "API To ADL Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

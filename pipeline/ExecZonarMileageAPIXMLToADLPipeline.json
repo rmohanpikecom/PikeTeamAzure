@@ -1,0 +1,136 @@
+{
+	"name": "ExecZonarMileageAPIXMLToADLPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "ExecZonarMileageAPIXMLToADLPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ComputeEpochDates",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ZonarMileageAPIXMLToADLPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Container": "zonarmileage",
+						"StorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=piketeamzonarabs;AccountKey=W1Sc1Sk0aX/b7LR1f1qN+nYGGZgW+S6AYF+OKo/h8Bg9jAUbje2xJGieRJc8PiHOd7rO8TMj1e7nADzPpKEbnw==;EndpointSuffix=core.windows.net",
+						"ServiceUserName": "fw_upload",
+						"ServicePassword": "p1kef!eet",
+						"ServiceUrl": {
+							"value": "http://pik3599.zonarsystems.net/interface.php?action=showposition&operation=mileage&fromdate=@{activity('ComputeEpochDates').output.firstRow.EpochStart}&todate=@{activity('ComputeEpochDates').output.firstRow.EpochEnd}&format=xml&reqtype=fleet",
+							"type": "Expression"
+						},
+						"FileLocation": {
+							"value": "@concat(utcnow('yyyy-MM-dd'),'/zonarmileage_',utcnow('yyyyMMddHHmmss'))",
+							"type": "Expression"
+						},
+						"WebServiceUrl": "https://piketeamwebserviceutility.azurewebsites.net/api/WebServiceXMLToJson?code=nOSh3Nj6ePgPXpyalz0tqYZpTwFkey7sI5fhZJpFbMo4Dzz/DzqFcA==",
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"SourceTable": "ZonarMileageApi",
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLTask": "API",
+						"ETLActivityName": "APIZonarMileage",
+						"ETLPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						},
+						"DestinationTable": "ET.ZonarMileage",
+						"Format": "XML"
+					}
+				}
+			},
+			{
+				"name": "ComputeEpochDates",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderStoredProcedureName": "[DW].[pGetEpochWholeDaysFromETLWindow]",
+						"storedProcedureParameters": {
+							"s": {
+								"type": "DateTime",
+								"value": {
+									"value": "@{pipeline().parameters.ETLWindowStart}",
+									"type": "Expression"
+								}
+							},
+							"e": {
+								"type": "DateTime",
+								"value": {
+									"value": "@{pipeline().parameters.ETLWindowEnd}",
+									"type": "Expression"
+								}
+							},
+							"EpochStart": {
+								"type": "INT",
+								"value": "0"
+							},
+							"EpochEnd": {
+								"type": "INT",
+								"value": "0"
+							}
+						}
+					},
+					"dataset": {
+						"referenceName": "AzureSqlDWETLPipelineInstance",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			}
+		],
+		"parameters": {
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLMasterPipelineID": {
+				"type": "String"
+			},
+			"ETLMasterPipelineName": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "API To ADL Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

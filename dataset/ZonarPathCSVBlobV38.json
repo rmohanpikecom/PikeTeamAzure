@@ -1,0 +1,94 @@
+{
+	"name": "ZonarPathCSVBlobV38",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ZonarJsonFiles",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Container": {
+				"type": "String"
+			},
+			"FileLocation": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlob",
+		"structure": [
+			{
+				"name": "Asset ID",
+				"type": "String"
+			},
+			{
+				"name": "Asset No.",
+				"type": "String"
+			},
+			{
+				"name": "Date",
+				"type": "String"
+			},
+			{
+				"name": "Time(EDT)",
+				"type": "String"
+			},
+			{
+				"name": "Speed(MPH)",
+				"type": "String"
+			},
+			{
+				"name": "Heading",
+				"type": "String"
+			},
+			{
+				"name": "Log Reason",
+				"type": "String"
+			},
+			{
+				"name": "Distance Traveled(Miles)",
+				"type": "String"
+			},
+			{
+				"name": "Lat",
+				"type": "String"
+			},
+			{
+				"name": "Lon",
+				"type": "String"
+			},
+			{
+				"name": "Zone",
+				"type": "String"
+			},
+			{
+				"name": "Address",
+				"type": "String"
+			},
+			{
+				"name": "Source",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "\n",
+				"quoteChar": "\"",
+				"nullValue": "",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": true
+			},
+			"fileName": {
+				"value": "@dataset().FileLocation",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().Container",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

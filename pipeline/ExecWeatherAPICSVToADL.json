@@ -1,0 +1,93 @@
+{
+	"name": "ExecWeatherAPICSVToADL",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute WeatherAPICSVtoADLPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WeatherAPICSVToADLPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Container": "weathercsv",
+						"StorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=piketeamzonarabs;AccountKey=W1Sc1Sk0aX/b7LR1f1qN+nYGGZgW+S6AYF+OKo/h8Bg9jAUbje2xJGieRJc8PiHOd7rO8TMj1e7nADzPpKEbnw==;EndpointSuffix=core.windows.net",
+						"ServiceUserName": " NA",
+						"ServicePassword": " NA",
+						"ServiceUrl": {
+							"value": "https://api.weather.com/v3/wx/hod/conditions/historical/point?pointType=weighted&geocode=@{pipeline().parameters.GeoCode}&startDateTime=@{formatDateTime(pipeline().parameters.ETLWindowStart,'yyyyMMddHHmm')}&endDateTime=@{formatDateTime(pipeline().parameters.ETLWindowEnd,'yyyyMMddHHmm')}&units=e&format=csv&apiKey=0d431ee6d751478f831ee6d751778fbc",
+							"type": "Expression"
+						},
+						"FileLocation": {
+							"value": "@concat(utcnow('yyyy-MM-dd'),'/weather_',pipeline().parameters.YardSK,'_',utcnow('yyyyMMddHHmmss'),'.csv')",
+							"type": "Expression"
+						},
+						"WebServiceUrl": "https://piketeamwebserviceutility.azurewebsites.net/api/WebServiceXMLToJson?code=nOSh3Nj6ePgPXpyalz0tqYZpTwFkey7sI5fhZJpFbMo4Dzz/DzqFcA==",
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"SourceTable": "WeatherApi",
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLTask": "API",
+						"ETLActivityName": "APIWeatherConditions",
+						"ETLPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						},
+						"DestinationTable": "ET.Weather",
+						"Format": "CSV",
+						"YardSK": {
+							"value": "@pipeline().parameters.YardSK",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLMasterPipelineID": {
+				"type": "String"
+			},
+			"ETLMasterPipelineName": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			},
+			"GeoCode": {
+				"type": "String",
+				"defaultValue": "33,100"
+			},
+			"YardSK": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "API To ADL Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

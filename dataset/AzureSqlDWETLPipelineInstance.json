@@ -1,0 +1,81 @@
+{
+	"name": "AzureSqlDWETLPipelineInstance",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "piketeamasdw",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"structure": [
+			{
+				"name": "ETLPipelineID",
+				"type": "String"
+			},
+			{
+				"name": "ETLWindowStart",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLWindowEnd",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineStart",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineEnd",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLStatus",
+				"type": "String"
+			},
+			{
+				"name": "ETLPipelineName",
+				"type": "String"
+			},
+			{
+				"name": "ETLWindowEndLocal",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineEndLocal",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLWindowEndDateLocal",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineEndDateLocal",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineEndDate",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLWindowEndDate",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineStartDate",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineStartDateLocal",
+				"type": "DateTime"
+			},
+			{
+				"name": "ETLPipelineStartLocal",
+				"type": "DateTime"
+			}
+		],
+		"typeProperties": {
+			"tableName": "[ETL].[PipelineInstance]"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

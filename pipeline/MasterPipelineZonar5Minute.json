@@ -1,0 +1,142 @@
+{
+	"name": "MasterPipelineZonar5Minute",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute API Call",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExecZonarPathAPICall5minutes",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecExtractZonarPathPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute API Call",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ExtractZonarPathPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ExecFactCurrentActivityPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ExecExtractZonarPathPipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FactCurrentActivityPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLMasterPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"NotificationList": {
+				"type": "String"
+			},
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Master Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

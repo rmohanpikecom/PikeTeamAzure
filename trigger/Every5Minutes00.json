@@ -1,0 +1,31 @@
+{
+	"name": "Every5Minutes00",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "MasterPipelineZonar5Minute",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"NotificationList": "YourEmail@Pike.com",
+				"ETLWindowStart": "@{formatDateTime(addminutes(trigger().outputs.windowEndTime,-5),'yyyy-MM-dd HH:mm:ss')}",
+				"ETLWindowEnd": "@{formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss')}"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Minute",
+			"interval": 15,
+			"startTime": "2018-08-09T03:50:00Z",
+			"delay": "00:03:00",
+			"maxConcurrency": 2,
+			"retryPolicy": {
+				"count": 3,
+				"intervalInSeconds": 240
+			},
+			"dependsOn": []
+		}
+	}
+}

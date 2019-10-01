@@ -1,0 +1,406 @@
+{
+	"name": "ActivityPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "ActivityBegin",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pActivityInsert]",
+					"storedProcedureParameters": {
+						"ETLActivityName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLActivityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineId": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLSliceEnd": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLTask": {
+							"value": {
+								"value": "@pipeline().parameters.ETLTask",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowEnd": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowEnd",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"SourceTable": {
+							"value": {
+								"value": "@pipeline().parameters.SourceTable",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLSliceStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ExecuteActivity",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ActivityBegin",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "@pipeline().parameters.StoredProcedureName",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"ErrorBln": {
+							"value": "0",
+							"type": "Byte"
+						},
+						"ETLActivityName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLActivityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineID": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowEnd": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowEnd",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLWindowStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"FromRowNumber": {
+							"value": "-1",
+							"type": "Int64"
+						},
+						"ToRowNumber": {
+							"value": "-1",
+							"type": "Int64"
+						},
+						"SourceTable": {
+							"value": {
+								"value": "@pipeline().parameters.SourceTable",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ProcedureName": {
+							"value": {
+								"value": "@pipeline().parameters.StoredProcedureName",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ActivityEnd",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "RowCount",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pActivityUpdate]",
+					"storedProcedureParameters": {
+						"ETLActivityName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLActivityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineID": {
+							"value": {
+								"value": "@pipeline().parameters.ETLPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLStatus": {
+							"value": "Success",
+							"type": "String"
+						},
+						"RowsErrored": {
+							"value": "0",
+							"type": "Int64"
+						},
+						"RowsInserted": {
+							"value": {
+								"value": "@activity('RowCount').output.firstrow.RowsInserted",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						},
+						"RowsUpdated": {
+							"value": {
+								"value": "@activity('RowCount').output.firstrow.RowsUpdated",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "ActivityBegin Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ActivityBegin",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ActivityBegin').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ExecuteActivity Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ExecuteActivity",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ExecuteActivity').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ActivityEnd Send Failure Email",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ActivityEnd",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Activity @{pipeline().parameters.ETLActivityName}  Failure - @{activity('ActivityEnd').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "RowCount",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ExecuteActivity",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "Select count(case when etlinsertdate=etlmodifydate then etlpipelineid else null end) RowsInserted,\ncount(case when etlinsertdate<>etlmodifydate then etlpipelineid else null end) RowsUpdated\nfrom @{pipeline().parameters.DestinationTable}\nwhere etlpipelineid='@{pipeline().parameters.ETLPipelineID}'",
+							"type": "Expression"
+						}
+					},
+					"dataset": {
+						"referenceName": "AzureSqlDWETLPipelineInstance",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ETLPipelineID": {
+				"type": "String"
+			},
+			"ETLActivityName": {
+				"type": "String"
+			},
+			"ETLPipelineName": {
+				"type": "String"
+			},
+			"ETLTask": {
+				"type": "String"
+			},
+			"SourceTable": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"DestinationTable": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			},
+			"StoredProcedureName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Base Template Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,248 @@
+{
+	"name": "DimWorkOrderPipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "PipelineBegin",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pPipelineInsert]",
+					"storedProcedureParameters": {
+						"ETLPipelineID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowEnd": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowEnd",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLWindowStart": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowStart",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"ETLMasterPipelineID": {
+							"value": {
+								"value": "@pipeline().parameters.ETLMasterPipelineID",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLMasterPipelineName": {
+							"value": {
+								"value": "@pipeline().parameters.ETLMasterPipelineName",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "TransformLoadDim",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "PipelineBegin",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "ActivityPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"ETLPipelineID": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"ETLActivityName": "TransformLoadDimWorkOrder",
+						"ETLPipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"ETLTask": "TransformLoadDim",
+						"SourceTable": "Stage.Timesheet",
+						"ETLWindowEnd": {
+							"value": "@pipeline().parameters.ETLWindowEnd",
+							"type": "Expression"
+						},
+						"ETLWindowStart": {
+							"value": "@pipeline().parameters.ETLWindowStart",
+							"type": "Expression"
+						},
+						"DestinationTable": "DW.WorkOrder",
+						"NotificationList": {
+							"value": "@pipeline().parameters.NotificationList",
+							"type": "Expression"
+						},
+						"StoredProcedureName": "DW.pWorkOrder"
+					}
+				}
+			},
+			{
+				"name": "PipelineEnd",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "TransformLoadDim",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[ETL].[pPipelineUpdate]",
+					"storedProcedureParameters": {
+						"ETLPipelineID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLPipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"ETLWindowEnd": {
+							"value": {
+								"value": "@pipeline().parameters.ETLWindowEnd",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "piketeamasdw",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Send Failure Email Pipeline Begin",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "PipelineBegin",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Pipeline Failure - @{activity('PipelineBegin').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send Failure Email Pipeline End",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "PipelineEnd",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-24.eastus2.logic.azure.com:443/workflows/7ead4e10ab1f4c1499066ac2456ebd50/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nsBsgONfNOEM0auRu5OdLjdmNj9TfvwF2bYNUK-pp0I",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"body": {
+						"value": "{\n    \"dataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"message\": \"Pipeline Failure - @{activity('PipelineEnd').error.message}\",\n    \"subject\": \"Pipeline Failure - @{pipeline().Pipeline}\",\n   \"receiver\": \"@{pipeline().parameters.NotificationList}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"ETLWindowStart": {
+				"type": "String"
+			},
+			"ETLWindowEnd": {
+				"type": "String"
+			},
+			"ETLMasterPipelineID": {
+				"type": "String"
+			},
+			"ETLMasterPipelineName": {
+				"type": "String"
+			},
+			"NotificationList": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Dim Pipelines"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

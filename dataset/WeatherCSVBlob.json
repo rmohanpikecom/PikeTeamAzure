@@ -1,0 +1,137 @@
+{
+	"name": "WeatherCSVBlob",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ZonarJsonFiles",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Container": {
+				"type": "String"
+			},
+			"FileLocation": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlob",
+		"structure": [
+			{
+				"name": "latitude",
+				"type": "String"
+			},
+			{
+				"name": "longitude",
+				"type": "String"
+			},
+			{
+				"name": "drivingDifficultyIndex",
+				"type": "String"
+			},
+			{
+				"name": "observationTimeUtcIso",
+				"type": "String"
+			},
+			{
+				"name": "precip1Hour",
+				"type": "String"
+			},
+			{
+				"name": "precip24Hour",
+				"type": "String"
+			},
+			{
+				"name": "precip6Hour",
+				"type": "String"
+			},
+			{
+				"name": "pressureChange",
+				"type": "String"
+			},
+			{
+				"name": "relativeHumidity",
+				"type": "String"
+			},
+			{
+				"name": "wxPhraseCode",
+				"type": "String"
+			},
+			{
+				"name": "iconCode",
+				"type": "String"
+			},
+			{
+				"name": "snow1Hour",
+				"type": "String"
+			},
+			{
+				"name": "snow24Hour",
+				"type": "String"
+			},
+			{
+				"name": "snow6Hour",
+				"type": "String"
+			},
+			{
+				"name": "temperature",
+				"type": "String"
+			},
+			{
+				"name": "temperatureChange24Hour",
+				"type": "String"
+			},
+			{
+				"name": "temperatureDewPoint",
+				"type": "String"
+			},
+			{
+				"name": "temperatureFeelsLike",
+				"type": "String"
+			},
+			{
+				"name": "temperatureMax24Hour",
+				"type": "String"
+			},
+			{
+				"name": "temperatureMin24Hour",
+				"type": "String"
+			},
+			{
+				"name": "uvIndex",
+				"type": "String"
+			},
+			{
+				"name": "visibility",
+				"type": "String"
+			},
+			{
+				"name": "windGust",
+				"type": "String"
+			},
+			{
+				"name": "windSpeed",
+				"type": "String"
+			}
+		],
+		"typeProperties": {
+			"format": {
+				"type": "TextFormat",
+				"columnDelimiter": ",",
+				"rowDelimiter": "",
+				"nullValue": "\\N",
+				"treatEmptyAsNull": true,
+				"skipLineCount": 0,
+				"firstRowAsHeader": true
+			},
+			"fileName": {
+				"value": "@dataset().FileLocation",
+				"type": "Expression"
+			},
+			"folderPath": {
+				"value": "@dataset().Container",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
